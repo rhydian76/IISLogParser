@@ -1,11 +1,11 @@
-## IISLogFileParser
+# IISLogFileParser
 
 A basic parser tool for IIS Logs which summarises findings from the log file.
 
 Inspired by the Gist https://gist.github.com/wh13371/e735bc865a494c35513e 
 
 
-# Usage
+## Usage
 
 ``iislogparse.py [-h] -f <iis logfile> [-s] [-c] [-t <number>] [-x <x.x.x.x,y.y.y.y] [-b] [-d]``
 
