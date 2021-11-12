@@ -92,8 +92,9 @@ def main(argv):
         if summariseByDate:
             dailyRequests.append(logEntry.get('date'))
 
-        if logEntry.get('c-ip') not in uniqueIPs:
-            uniqueIPs.append(logEntry.get('c-ip'))
+        if not summariseOnly:
+            if logEntry.get('c-ip') not in uniqueIPs:
+                uniqueIPs.append(logEntry.get('c-ip'))
 
     print('-' * 40)
     print('Analysis of IIS Log file', iisLogfile)
@@ -101,7 +102,8 @@ def main(argv):
     print('{:<30s}{:>6s}'.format('Total records in log file: ', str(len(filteredLogPayload))))
     print('{:<30s}{:>6s}'.format('Total Unique Client IPs:',str(len(uniqueIPs))))
     if not summariseOnly:
-        print('{:<30s}{:>6s}'.format('Unique Client IPs:'))
+        print('{:<30s}'.format('Unique Client IPs:'))
+        print('{:<30s}'.format('------------------'))
         for ip in uniqueIPs:
             print(ip)
 
