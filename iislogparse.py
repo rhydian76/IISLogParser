@@ -96,9 +96,8 @@ def main(argv):
         if summariseByDate:
             dailyRequests.append(logEntry.get('date'))
 
-        if not summariseOnly:
-            if logEntry.get('c-ip') not in uniqueIPs:
-                uniqueIPs.append(logEntry.get('c-ip'))
+        if logEntry.get('c-ip') not in uniqueIPs:
+            uniqueIPs.append(logEntry.get('c-ip'))
 
     print('-' * 40)
     print('Analysis of IIS Log file', iisLogfile)
