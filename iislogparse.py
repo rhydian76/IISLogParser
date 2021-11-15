@@ -1,22 +1,23 @@
 import fileinput, sys, getopt
 from collections import Counter
+from socket import gethostbyaddr
 
 def filterLogs(key, key_values, list_of_dicts):
  return list(filter(lambda d: d[key] not in key_values, list_of_dicts))
 
 def displayHelp():
     print('\nUsage:')
-    print('iislogparse.py [-h] -f <iis logfile> [-s] [-c] [-t <number>] [-x <x.x.x.x,y.y.y.y] [-b] [-d]')
+    print('iislogparse.py [-h] -f <iis logfile> [-s] [-c] [-t <number>] [-x <x.x.x.x,y.y.y.y] [-b] [-d] [-r]')
     print('\nSwitches:')
-    print('{:<20s}{:>6s}'.format('-h', 'Display this help message.'))
-    print('{:<20s}{:>6s}'.format('-f <filename>', 'Path to the IIS log file to analyse.'))
-    print('{:<20s}{:>6s}'.format('-s', 'Summarise only. Do not display each request.'))
-    print('{:<20s}{:>6s}'.format('-c', 'Display a breakdown of HTTP status codes.'))
-    print('{:<20s}{:>6s}'.format('-t <number>', 'Display the top <number> clients. Defaults to 10 if ommitted.'))
-    print('{:<20s}{:>6s}'.format('-x <ip,ip>', 'A comma separated list of IP addresses to exclude from the report. No spaces allowed.'))
-    print('{:<20s}{:>6s}'.format('-b', 'Display a breakdown of total requests per hour.'))
-    print('{:<20s}{:>6s}'.format('-d', 'Display a breakdown of total requests per date.'))
-
+    print('{:<20s}{:>6s}'.format('-h', 'Display this help message'))
+    print('{:<20s}{:>6s}'.format('-f <filename>', 'Path to the IIS log file to analyse'))
+    print('{:<20s}{:>6s}'.format('-s', 'Summarise only. Do not display each request'))
+    print('{:<20s}{:>6s}'.format('-c', 'Display a breakdown of HTTP status codes'))
+    print('{:<20s}{:>6s}'.format('-t <number>', 'Display the top <number> clients. Defaults to 10 if ommitted'))
+    print('{:<20s}{:>6s}'.format('-x <ip,ip>', 'A comma separated list of IP addresses to exclude from the report. No spaces allowed'))
+    print('{:<20s}{:>6s}'.format('-b', 'Display a breakdown of total requests per hour'))
+    print('{:<20s}{:>6s}'.format('-d', 'Display a breakdown of total requests per date'))
+    print('{:<20s}{:>6s}'.format('-r', 'Attempt reverse DNS lookup of client IP addresses'))
 
 def main(argv):
     l = [] # a list to hold a <dict> for each line in the IIS log file
@@ -31,10 +32,11 @@ def main(argv):
     summariseHTTPCodes = False
     summariseByTime = False
     summariseByDate = False
+    reverseDNSLookup = False
     displayTop = 10
 
     try:
-      opts, args = getopt.getopt(argv,"hscbdf:t:x:")
+      opts, args = getopt.getopt(argv,"hscbdrf:t:x:")
     except getopt.GetoptError:
       displayHelp()
       sys.exit(2)
@@ -56,6 +58,8 @@ def main(argv):
             displayTop = int(arg)
         if opt == '-x':
             excludeList = arg.split(",")
+        if opt == '-r':
+            reverseDNSLookup = True
 
     ## Read log format header format from the IIS log
     for line in fileinput.input(iisLogfile):
@@ -102,7 +106,7 @@ def main(argv):
     print('{:<30s}{:>6s}'.format('Total records in log file: ', str(len(filteredLogPayload))))
     print('{:<30s}{:>6s}'.format('Total Unique Client IPs:',str(len(uniqueIPs))))
     if not summariseOnly:
-        print('{:<30s}'.format('Unique Client IPs:'))
+        print('{:<30s}'.format('\nUnique Client IPs:'))
         print('{:<30s}'.format('------------------'))
         for ip in uniqueIPs:
             print(ip)
@@ -132,12 +136,19 @@ def main(argv):
             print('{:<20s}{:>6s}'.format(count[0], str(count[1])))
 
     print('\nTop Clients:\n')
-    print('{:<20s}{:>6s}'.format('Client IP','Requests'))
-    print('{:<20s}{:>6s}'.format('---------','--------'))
+    print('{:<15s}{:<18s}{:<8s}'.format('Requests','Client IP','FQDN'))
+    print('{:<15s}{:<18s}{:<8s}'.format('--------','---------','----'))
     clientDict = dict(Counter(allIPs))
     increment = 0
     for count in (sorted(clientDict.items(), reverse=True, key=lambda item: item[1])):
-        print('{:<20s}{:>6s}'.format(count[0], str(count[1])))
+        if reverseDNSLookup:
+            try:
+                dns = gethostbyaddr(count[0])[0]
+            except:
+                dns = '-'
+            finally:
+                print('{:<15s}{:<18s}{:<8s}'.format(str(count[1]), count[0], dns))
+
         increment += 1
         if increment >= displayTop:
             break
