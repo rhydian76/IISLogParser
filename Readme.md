@@ -1,5 +1,5 @@
 # IISLogFileParser
-A basic parser tool for IIS Logs which summarises findings from the log file.
+A basic Python3 parser tool for IIS Logs which summarises findings from the log file.
 
 Inspired by the Gist https://gist.github.com/wh13371/e735bc865a494c35513e 
 
