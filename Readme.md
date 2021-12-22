@@ -1,3 +1,5 @@
+![GitHub](https://img.shields.io/github/license/rhydian76/IISLogParser)
+
 # IISLogFileParser
 A basic Python3 parser tool for IIS Logs which summarises findings from the log file.
 
